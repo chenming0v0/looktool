@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail 验证码获取工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #94a3b8;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        input[type="text"]::placeholder {
+            color: #64748b;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 12px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .status.success {
+            color: #10b981;
+        }
+        
+        .status.error {
+            color: #ef4444;
+        }
+        
+        .code-display {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        
+        .code-value {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 48px;
+            font-weight: bold;
+            color: #3b82f6;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+            word-break: break-all;
+        }
+        
+        .code-value.success {
+            color: #10b981;
+        }
+        
+        .code-value.error {
+            color: #ef4444;
+            font-size: 24px;
+        }
+        
+        .code-value.warning {
+            color: #f59e0b;
+        }
+        
+        .code-info {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+        
+        .history-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #94a3b8;
+        }
+        
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .history-code {
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+            color: #10b981;
+            cursor: pointer;
+        }
+        
+        .history-code:hover {
+            text-decoration: underline;
+        }
+        
+        .history-subject {
+            color: #64748b;
+            flex: 1;
+            margin: 0 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .history-time {
+            color: #475569;
+            font-size: 12px;
+        }
+        
+        .empty-history {
+            text-align: center;
+            color: #475569;
+            padding: 20px;
+            font-size: 13px;
+        }
+        
+        /* 滚动条样式 */
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .history-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+        
+        .history-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .history-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Gmail 验证码获取工具</h1>
+        
+        <div class="card">
+            <div class="form-group">
+                <label>API 地址</label>
+                <input type="text" id="apiUrl" value="http://localhost:8080" placeholder="http://localhost:8080">
+            </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="text" id="apiKey" placeholder="输入你的 API Key">
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="fetchLatestCode()">获取最新验证码</button>
+                <button class="btn-secondary" onclick="fetchAllCodes()">获取所有验证码</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div id="status" class="status">请输入 API Key 后点击获取</div>
+            <div class="code-display">
+                <div id="codeValue" class="code-value">------</div>
+                <div id="codeInfo" class="code-info"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-success" onclick="copyCode()">📋 复制验证码</button>
+                <button class="btn-secondary" onclick="fetchLatestCode(true)">🔄 刷新获取</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="history-title">📜 历史记录</div>
+            <div id="historyList" class="history-list">
+                <div class="empty-history">暂无记录</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let currentCode = '';
+        
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+        
+        function setStatus(text, type = '') {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = 'status ' + type;
+        }
+        
+        function setCode(code, type = '', info = '') {
+            const codeValue = document.getElementById('codeValue');
+            const codeInfo = document.getElementById('codeInfo');
+            codeValue.textContent = code || '------';
+            codeValue.className = 'code-value ' + type;
+            codeInfo.innerHTML = info;
+            currentCode = (type === 'success' || type === '') ? code : '';
+        }
+        
+        function addToHistory(code, subject, time) {
+            const historyList = document.getElementById('historyList');
+            const empty = historyList.querySelector('.empty-history');
+            if (empty) empty.remove();
+            
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <span class="history-code" onclick="copyText('${code}')">${code || '无'}</span>
+                <span class="history-subject">${subject || ''}</span>
+                <span class="history-time">${time || ''}</span>
+            `;
+            historyList.insertBefore(item, historyList.firstChild);
+            
+            // 限制历史记录数量
+            while (historyList.children.length > 20) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+        
+        function copyText(text) {
+            if (!text || text === '无' || text === '------') {
+                showToast('没有可复制的内容');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('已复制: ' + text);
+            }).catch(() => {
+                showToast('复制失败');
+            });
+        }
+        
+        function copyCode() {
+            copyText(currentCode);
+        }
+        
+        async function fetchLatestCode(refresh = false) {
+            const apiUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                showToast('请输入 API Key');
+                return;
+            }
+            
+            setStatus('正在获取...');
+            setCode('...', '', '');
+            
+            try {
+                const url = `${apiUrl}/api/code/latest?api_key=${encodeURIComponent(apiKey)}${refresh ? '&refresh=1' : ''}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                
+                const code = data.code || data.last_code || '';
+                const subject = data.subject || '';
+                const from = data.from || data.email || '';
+                const date = data.date || data.last_received_at || '';
+                
+                if (code) {
+                    setStatus('获取成功!', 'success');
+                    setCode(code, 'success', `来自: ${from}<br>主题: ${subject}<br>时间: ${formatDate(date)}`);
+                    addToHistory(code, subject, formatDate(date));
+                } else {
+                    setStatus('未找到验证码', '');
+                    setCode('无验证码', 'warning', '');
+                }
+            } catch (error) {
+                setStatus('错误: ' + error.message, 'error');
+                setCode('错误', 'error', error.message);
+            }
+        }
+        
+        async function fetchAllCodes() {
+            const apiUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                showToast('请输入 API Key');
+                return;
+            }
+            
+            setStatus('正在获取...');
+            
+            try {
+                const url = `${apiUrl}/api/codes?api_key=${encodeURIComponent(apiKey)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                
+                const messages = data.messages || [];
+                
+                if (messages.length > 0) {
+                    // 显示第一个
+                    const first = messages[0];
+                    const code = first.code || '';
+                    setStatus(`获取成功! 共 ${messages.length} 条`, 'success');
+                    setCode(code || '无', code ? 'success' : 'warning', 
+                        `来自: ${first.from || ''}<br>主题: ${first.subject || ''}`);
+                    
+                    // 清空并添加所有到历史
+                    const historyList = document.getElementById('historyList');
+                    historyList.innerHTML = '';
+                    
+                    messages.forEach(msg => {
+                        addToHistory(msg.code || '无', msg.subject || '', formatDate(msg.received_at || msg.date));
+                    });
+                } else {
+                    setStatus('未找到验证码', '');
+                    setCode('无验证码', 'warning', '');
+                }
+            } catch (error) {
+                setStatus('错误: ' + error.message, 'error');
+                setCode('错误', 'error', error.message);
+            }
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return dateStr;
+                return date.toLocaleString('zh-CN', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch {
+                return dateStr;
+            }
+        }
+        
+        // 回车键触发获取
+        document.getElementById('apiKey').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') fetchLatestCode();
+        });
+        
+        // 从 localStorage 恢复配置
+        const savedUrl = localStorage.getItem('apiUrl');
+        const savedKey = localStorage.getItem('apiKey');
+        if (savedUrl) document.getElementById('apiUrl').value = savedUrl;
+        if (savedKey) document.getElementById('apiKey').value = savedKey;
+        
+        // 保存配置到 localStorage
+        document.getElementById('apiUrl').addEventListener('change', function() {
+            localStorage.setItem('apiUrl', this.value);
+        });
+        document.getElementById('apiKey').addEventListener('change', function() {
+            localStorage.setItem('apiKey', this.value);
+        });
+    </script>
+</body>
+</html>
