@@ -5,348 +5,449 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gmail 验证码获取工具</title>
     <style>
+        :root {
+            --bg: #020617;
+            --bg-soft: #0f172a;
+            --card: rgba(15, 23, 42, 0.76);
+            --card-border: rgba(148, 163, 184, 0.24);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --primary: #38bdf8;
+            --primary-strong: #0ea5e9;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --shadow: 0 16px 40px rgba(2, 6, 23, 0.45);
+            --radius: 18px;
+            --timing-fast: 180ms;
+            --timing-base: 260ms;
+            --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             min-height: 100vh;
-            color: #e2e8f0;
-            padding: 20px;
+            color: var(--text);
+            background:
+                radial-gradient(900px circle at 10% -10%, rgba(56, 189, 248, 0.18), transparent 50%),
+                radial-gradient(900px circle at 90% 110%, rgba(52, 211, 153, 0.16), transparent 52%),
+                linear-gradient(140deg, var(--bg) 0%, var(--bg-soft) 100%);
+            padding: 28px 16px;
+            line-height: 1.55;
         }
-        
-        .container {
-            max-width: 600px;
+
+        .app {
+            max-width: 980px;
             margin: 0 auto;
         }
-        
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: flex-end;
+            margin-bottom: 18px;
+        }
+
         h1 {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 30px;
-            color: #fff;
+            font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #f8fafc;
+            margin-bottom: 6px;
         }
-        
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .status-pill {
+            padding: 9px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            background: rgba(14, 165, 233, 0.12);
+            color: #bae6fd;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 16px;
+        }
+
         .card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 18px;
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow);
+            transform: translateY(0) scale(1);
+            transition: transform var(--timing-base) var(--ease-standard), border-color var(--timing-fast);
         }
-        
-        .form-group {
-            margin-bottom: 16px;
+
+        .card:hover {
+            transform: translateY(-2px) scale(1.003);
+            border-color: rgba(56, 189, 248, 0.4);
         }
-        
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group { margin-bottom: 14px; }
+
         label {
             display: block;
-            font-size: 14px;
+            margin-bottom: 7px;
+            font-size: 13px;
+            color: var(--muted);
             font-weight: 500;
-            margin-bottom: 8px;
-            color: #94a3b8;
         }
-        
+
         input[type="text"] {
             width: 100%;
-            padding: 12px 16px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(2, 6, 23, 0.55);
+            color: #f1f5f9;
+            padding: 0 13px;
             font-size: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            color: #fff;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color var(--timing-fast), box-shadow var(--timing-fast), transform var(--timing-fast);
         }
-        
+
+        input[type="text"]::placeholder { color: #64748b; }
+
         input[type="text"]:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.16);
+            transform: translateY(-1px);
         }
-        
-        input[type="text"]::placeholder {
-            color: #64748b;
-        }
-        
-        .btn-group {
-            display: flex;
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
-            flex-wrap: wrap;
         }
-        
+
         button {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 20px;
+            min-height: 44px;
+            padding: 0 14px;
+            border-radius: 12px;
+            border: 1px solid transparent;
             font-size: 14px;
-            font-weight: 500;
-            border: none;
-            border-radius: 8px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: transform var(--timing-fast), background-color var(--timing-fast), border-color var(--timing-fast), box-shadow var(--timing-fast);
+            transform-origin: center;
         }
-        
+
+        button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+        }
+
+        button:hover:not(:disabled) { transform: translateY(-1px); }
+        button:active:not(:disabled) { transform: scale(0.98); }
+
         .btn-primary {
-            background: #3b82f6;
-            color: #fff;
+            color: #082f49;
+            background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 80%);
         }
-        
-        .btn-primary:hover {
-            background: #2563eb;
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #bae6fd 0%, #0ea5e9 85%);
         }
-        
+
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            color: #dbeafe;
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(148, 163, 184, 0.28);
         }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
+
+        .btn-secondary:hover:not(:disabled) {
+            border-color: rgba(56, 189, 248, 0.45);
+            background: rgba(30, 41, 59, 0.98);
         }
-        
+
         .btn-success {
-            background: #10b981;
-            color: #fff;
+            color: #052e16;
+            background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
         }
-        
-        .btn-success:hover {
-            background: #059669;
-        }
-        
+
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-        
+
         .status {
-            text-align: center;
-            padding: 12px;
+            margin-bottom: 14px;
+            min-height: 24px;
+            color: var(--muted);
             font-size: 14px;
-            color: #94a3b8;
         }
-        
-        .status.success {
-            color: #10b981;
-        }
-        
-        .status.error {
-            color: #ef4444;
-        }
-        
+
+        .status.success { color: var(--success); }
+        .status.error { color: var(--danger); }
+
         .code-display {
             text-align: center;
-            padding: 30px 20px;
+            padding: 22px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            background: rgba(2, 6, 23, 0.45);
+            margin-bottom: 14px;
         }
-        
+
         .code-value {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 48px;
-            font-weight: bold;
-            color: #3b82f6;
-            letter-spacing: 4px;
-            margin-bottom: 16px;
-            word-break: break-all;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: clamp(2rem, 6vw, 3rem);
+            letter-spacing: 0.2em;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 10px;
+            transition: color var(--timing-base), transform var(--timing-fast);
         }
-        
-        .code-value.success {
-            color: #10b981;
-        }
-        
+
+        .code-value.success { color: var(--success); }
         .code-value.error {
-            color: #ef4444;
-            font-size: 24px;
+            color: var(--danger);
+            font-size: clamp(1.2rem, 3vw, 1.4rem);
+            letter-spacing: 0.04em;
         }
-        
-        .code-value.warning {
-            color: #f59e0b;
-        }
-        
+        .code-value.warning { color: var(--warning); }
+
         .code-info {
             font-size: 13px;
-            color: #64748b;
-            line-height: 1.6;
-        }
-        
-        .history-title {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 12px;
             color: #94a3b8;
+            line-height: 1.65;
         }
-        
+
         .history-list {
-            max-height: 200px;
+            max-height: 420px;
             overflow-y: auto;
+            padding-right: 6px;
         }
-        
+
         .history-item {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 10px;
             align-items: center;
             padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 13px;
+            border-radius: 12px;
+            background: rgba(2, 6, 23, 0.45);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            margin-bottom: 9px;
+            transition: border-color var(--timing-fast), transform var(--timing-fast);
         }
-        
-        .history-item:last-child {
-            margin-bottom: 0;
+
+        .history-item:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateX(2px);
         }
-        
+
         .history-code {
-            font-family: 'Consolas', monospace;
-            font-weight: 600;
-            color: #10b981;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            color: #6ee7b7;
+            font-weight: 700;
+            min-width: 74px;
             cursor: pointer;
         }
-        
-        .history-code:hover {
-            text-decoration: underline;
-        }
-        
+
+        .history-code:hover { text-decoration: underline; }
+
         .history-subject {
-            color: #64748b;
-            flex: 1;
-            margin: 0 12px;
+            color: #cbd5e1;
+            font-size: 13px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        
+
         .history-time {
-            color: #475569;
             font-size: 12px;
+            color: #64748b;
         }
-        
+
         .empty-history {
+            padding: 22px;
+            border-radius: 12px;
             text-align: center;
-            color: #475569;
-            padding: 20px;
-            font-size: 13px;
-        }
-        
-        /* 滚动条样式 */
-        .history-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .history-list::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
-        }
-        
-        .history-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-        
-        .history-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
+            color: #64748b;
+            border: 1px dashed rgba(148, 163, 184, 0.3);
         }
 
-        /* 加载动画 */
         .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            border: 2px solid rgba(148, 163, 184, 0.35);
+            border-top-color: #e2e8f0;
             animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
-        /* Toast 提示 */
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .toast {
             position: fixed;
-            bottom: 20px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #1e293b;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
+            bottom: 24px;
+            transform: translateX(-50%) translateY(14px) scale(0.98);
             opacity: 0;
-            transition: all 0.3s;
-            z-index: 1000;
+            background: rgba(15, 23, 42, 0.96);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            box-shadow: var(--shadow);
+            border-radius: 10px;
+            padding: 10px 16px;
+            transition: transform var(--timing-fast) var(--ease-standard), opacity var(--timing-fast) var(--ease-standard);
+            z-index: 30;
         }
-        
+
         .toast.show {
-            transform: translateX(-50%) translateY(0);
             opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        .history-list::-webkit-scrollbar { width: 6px; }
+        .history-list::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
+            border-radius: 999px;
+        }
+
+        @media (max-width: 900px) {
+            .hero { flex-direction: column; align-items: flex-start; }
+            .grid { grid-template-columns: 1fr; }
+            .history-list { max-height: 250px; }
+        }
+
+        @media (max-width: 520px) {
+            body { padding: 14px; }
+            .card { padding: 14px; border-radius: 14px; }
+            .btn-row { grid-template-columns: 1fr; }
+            .history-item { grid-template-columns: 1fr; gap: 4px; }
+            .history-time { justify-self: start; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📧 Gmail 验证码获取工具</h1>
-        
-        <div class="card">
-            <div class="form-group">
-                <label>API 地址</label>
-                <input type="text" id="apiUrl" value="http://localhost:8080" placeholder="http://localhost:8080">
+    <main class="app">
+        <header class="hero">
+            <div>
+                <h1>Gmail 验证码获取工具</h1>
+                <p class="subtitle">更清晰的视觉层级、更平滑的微交互、更好的移动端可读性。</p>
             </div>
-            <div class="form-group">
-                <label>API Key</label>
-                <input type="text" id="apiKey" placeholder="输入你的 API Key">
+            <div class="status-pill" id="connectionHint">就绪 · 等待请求</div>
+        </header>
+
+        <section class="grid">
+            <div>
+                <div class="card">
+                    <div class="section-title">接口配置</div>
+                    <div class="form-group">
+                        <label for="apiUrl">API 地址</label>
+                        <input type="text" id="apiUrl" value="http://localhost:8080" placeholder="http://localhost:8080">
+                    </div>
+                    <div class="form-group">
+                        <label for="apiKey">API Key</label>
+                        <input type="text" id="apiKey" placeholder="输入你的 API Key">
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn-primary action-btn" onclick="fetchLatestCode()">获取最新验证码</button>
+                        <button class="btn-secondary action-btn" onclick="fetchAllCodes()">获取所有验证码</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div id="status" class="status">请输入 API Key 后点击获取</div>
+                    <div class="code-display" aria-live="polite">
+                        <div id="codeValue" class="code-value">------</div>
+                        <div id="codeInfo" class="code-info"></div>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn-success" onclick="copyCode()">复制验证码</button>
+                        <button class="btn-secondary action-btn" onclick="fetchLatestCode(true)">刷新获取</button>
+                    </div>
+                </div>
             </div>
-            <div class="btn-group">
-                <button class="btn-primary" onclick="fetchLatestCode()">获取最新验证码</button>
-                <button class="btn-secondary" onclick="fetchAllCodes()">获取所有验证码</button>
+
+            <div class="card">
+                <div class="section-title">历史记录</div>
+                <div id="historyList" class="history-list">
+                    <div class="empty-history">暂无记录</div>
+                </div>
             </div>
-        </div>
-        
-        <div class="card">
-            <div id="status" class="status">请输入 API Key 后点击获取</div>
-            <div class="code-display">
-                <div id="codeValue" class="code-value">------</div>
-                <div id="codeInfo" class="code-info"></div>
-            </div>
-            <div class="btn-group">
-                <button class="btn-success" onclick="copyCode()">📋 复制验证码</button>
-                <button class="btn-secondary" onclick="fetchLatestCode(true)">🔄 刷新获取</button>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="history-title">📜 历史记录</div>
-            <div id="historyList" class="history-list">
-                <div class="empty-history">暂无记录</div>
-            </div>
-        </div>
-    </div>
-    
+        </section>
+    </main>
+
     <div id="toast" class="toast"></div>
 
     <script>
         let currentCode = '';
-        
-        function showToast(message, duration = 2000) {
+
+        function showToast(message, duration = 2200) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), duration);
         }
-        
+
+        function setBusy(isBusy) {
+            const buttons = document.querySelectorAll('.action-btn');
+            buttons.forEach(button => {
+                button.disabled = isBusy;
+                if (isBusy) {
+                    const label = button.dataset.label || button.textContent;
+                    button.dataset.label = label;
+                    button.innerHTML = '<span class="loading" aria-hidden="true"></span>处理中';
+                } else if (button.dataset.label) {
+                    button.textContent = button.dataset.label;
+                    delete button.dataset.label;
+                }
+            });
+
+            const connectionHint = document.getElementById('connectionHint');
+            connectionHint.textContent = isBusy ? '请求中 · 请稍候' : '就绪 · 等待请求';
+        }
+
         function setStatus(text, type = '') {
             const status = document.getElementById('status');
             status.textContent = text;
             status.className = 'status ' + type;
         }
-        
+
         function setCode(code, type = '', info = '') {
             const codeValue = document.getElementById('codeValue');
             const codeInfo = document.getElementById('codeInfo');
@@ -355,12 +456,12 @@
             codeInfo.innerHTML = info;
             currentCode = (type === 'success' || type === '') ? code : '';
         }
-        
+
         function addToHistory(code, subject, time) {
             const historyList = document.getElementById('historyList');
             const empty = historyList.querySelector('.empty-history');
             if (empty) empty.remove();
-            
+
             const item = document.createElement('div');
             item.className = 'history-item';
             item.innerHTML = `
@@ -369,13 +470,12 @@
                 <span class="history-time">${time || ''}</span>
             `;
             historyList.insertBefore(item, historyList.firstChild);
-            
-            // 限制历史记录数量
+
             while (historyList.children.length > 20) {
                 historyList.removeChild(historyList.lastChild);
             }
         }
-        
+
         function copyText(text) {
             if (!text || text === '无' || text === '------') {
                 showToast('没有可复制的内容');
@@ -387,103 +487,106 @@
                 showToast('复制失败');
             });
         }
-        
+
         function copyCode() {
             copyText(currentCode);
         }
-        
+
         async function fetchLatestCode(refresh = false) {
             const apiUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
             const apiKey = document.getElementById('apiKey').value.trim();
-            
+
             if (!apiKey) {
                 showToast('请输入 API Key');
                 return;
             }
-            
+
+            setBusy(true);
             setStatus('正在获取...');
             setCode('...', '', '');
-            
+
             try {
                 const url = `${apiUrl}/api/code/latest?api_key=${encodeURIComponent(apiKey)}${refresh ? '&refresh=1' : ''}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
-                
+
                 const code = data.code || data.last_code || '';
                 const subject = data.subject || '';
                 const from = data.from || data.email || '';
                 const date = data.date || data.last_received_at || '';
-                
+
                 if (code) {
                     setStatus('获取成功!', 'success');
                     setCode(code, 'success', `来自: ${from}<br>主题: ${subject}<br>时间: ${formatDate(date)}`);
                     addToHistory(code, subject, formatDate(date));
                 } else {
                     setStatus('未找到验证码', '');
-                    setCode('无验证码', 'warning', '');
+                    setCode('无验证码', 'warning', '可尝试点击“刷新获取”触发服务端重新拉取。');
                 }
             } catch (error) {
                 setStatus('错误: ' + error.message, 'error');
                 setCode('错误', 'error', error.message);
+            } finally {
+                setBusy(false);
             }
         }
-        
+
         async function fetchAllCodes() {
             const apiUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
             const apiKey = document.getElementById('apiKey').value.trim();
-            
+
             if (!apiKey) {
                 showToast('请输入 API Key');
                 return;
             }
-            
+
+            setBusy(true);
             setStatus('正在获取...');
-            
+
             try {
                 const url = `${apiUrl}/api/codes?api_key=${encodeURIComponent(apiKey)}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
-                
+
                 const messages = data.messages || [];
-                
+
                 if (messages.length > 0) {
-                    // 显示第一个
                     const first = messages[0];
                     const code = first.code || '';
                     setStatus(`获取成功! 共 ${messages.length} 条`, 'success');
-                    setCode(code || '无', code ? 'success' : 'warning', 
-                        `来自: ${first.from || ''}<br>主题: ${first.subject || ''}`);
-                    
-                    // 清空并添加所有到历史
+                    setCode(code || '无', code ? 'success' : 'warning', `来自: ${first.from || ''}<br>主题: ${first.subject || ''}`);
+
                     const historyList = document.getElementById('historyList');
                     historyList.innerHTML = '';
-                    
+
                     messages.forEach(msg => {
                         addToHistory(msg.code || '无', msg.subject || '', formatDate(msg.received_at || msg.date));
                     });
                 } else {
                     setStatus('未找到验证码', '');
-                    setCode('无验证码', 'warning', '');
+                    setCode('无验证码', 'warning', '接口返回成功，但没有可展示的验证码邮件。');
                 }
             } catch (error) {
                 setStatus('错误: ' + error.message, 'error');
                 setCode('错误', 'error', error.message);
+            } finally {
+                setBusy(false);
             }
         }
-        
+
         function formatDate(dateStr) {
             if (!dateStr) return '';
             try {
                 const date = new Date(dateStr);
-                if (isNaN(date.getTime())) return dateStr;
+                if (Number.isNaN(date.getTime())) return dateStr;
                 return date.toLocaleString('zh-CN', {
                     month: '2-digit',
                     day: '2-digit',
@@ -494,19 +597,16 @@
                 return dateStr;
             }
         }
-        
-        // 回车键触发获取
-        document.getElementById('apiKey').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') fetchLatestCode();
+
+        document.getElementById('apiKey').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') fetchLatestCode();
         });
-        
-        // 从 localStorage 恢复配置
+
         const savedUrl = localStorage.getItem('apiUrl');
         const savedKey = localStorage.getItem('apiKey');
         if (savedUrl) document.getElementById('apiUrl').value = savedUrl;
         if (savedKey) document.getElementById('apiKey').value = savedKey;
-        
-        // 保存配置到 localStorage
+
         document.getElementById('apiUrl').addEventListener('change', function() {
             localStorage.setItem('apiUrl', this.value);
         });
